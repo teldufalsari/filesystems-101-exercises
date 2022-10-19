@@ -50,6 +50,33 @@ int hello_getattr(const char* path, struct stat* stat, struct fuse_file_info* in
 	}
 }
 
+/** Create a file node
+ *
+ * This is called for creation of all non-directory, non-symlink
+ * nodes.  If the filesystem defines a create() method, then for
+ * regular files that will be called instead.
+ */
+int hello_mknod(const char* path, mode_t mode, dev_t device)
+{
+	(void)path;
+	(void)mode;
+	(void)device;
+	return -EROFS;
+}
+
+/** Create a directory 
+ *
+ * Note that the mode argument may not have the type specification
+ * bits set, i.e. S_ISDIR(mode) can be false.  To obtain the
+ * correct directory type bits use  mode|S_IFDIR
+ * */
+int hello_mkdir(const char* path, mode_t mode)
+{
+	(void)path;
+	(void)mode;
+	return -EROFS;
+}
+
 /** File open operation
  *
  * No creation (O_CREAT, O_EXCL) and by default also no
@@ -101,7 +128,6 @@ int hello_read(const char* path, char* buf,
 		char teh_file[64];
 		memset(teh_file, '\0', 64);
 		snprintf(teh_file, 64, "hello, %d\n", context->pid);
-		printf("\"%s\"\n", teh_file);
 		size_t n = strlen(teh_file);
 		if ((size_t)offset >= n) {
 			return 0;
@@ -206,6 +232,8 @@ void* hello_init(struct fuse_conn_info* conn, struct fuse_config* config)
 
 static const struct fuse_operations hellofs_ops = {
 	.getattr = &hello_getattr,
+	.mknod = &hello_mknod,
+	.mkdir = &hello_mkdir,
 	.open = &hello_open,
 	.read = &hello_read,
 	.write = &hello_write,
