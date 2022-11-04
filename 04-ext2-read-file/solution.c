@@ -144,7 +144,7 @@ int copy_by_inode(int imgfd, int outfd, unsigned block_size, const struct ext2_i
 	}
 	// If anything left, copy data from blocks pointed by the indirect block
 	if (size_left > 0) {
-		pread_exact(imgfd, buf, block_size, inode_ptr->i_block[EXT2_IND_BLOCK]);
+		pread_exact(imgfd, buf, block_size, block_size * inode_ptr->i_block[EXT2_IND_BLOCK]);
 		// copy_indirect returns copied size
 		ret = copy_indirect(imgfd, outfd, size_left, block_size, (unsigned*)buf);
 		if (ret > 0) {
@@ -156,7 +156,7 @@ int copy_by_inode(int imgfd, int outfd, unsigned block_size, const struct ext2_i
 	}
 	// If anything left, copy data from blocks pointed by the double indirect block
 	if (size_left) {
-		pread_exact(imgfd, buf, block_size, inode_ptr->i_block[EXT2_DIND_BLOCK]);
+		pread_exact(imgfd, buf, block_size, block_size * inode_ptr->i_block[EXT2_DIND_BLOCK]);
 		ret = copy_double_indirect(imgfd, outfd, size_left, block_size, (unsigned*)buf);
 	}
 	// Triple indirect blocks are not supported, we've done all we could
