@@ -163,8 +163,10 @@ int find_entry_inode(int imgfd, int type, const char* name,
 	char* buf = malloc(block_size);
 	int inode_nr = 0;
 	for (unsigned i = 0; i < EXT2_NDIR_BLOCKS; i++) {
-		if (inode->i_block[i] == 0)
+		if (inode->i_block[i] == 0) {
+			free(buf);
 			return -ENOENT;
+		}
 		if (load_block(imgfd, inode->i_block[i], buf, block_size) < 0) {
 			free(buf);
 			return -errno;
@@ -236,8 +238,10 @@ int find_record_in_indir_block(int imgfd, int type, const unsigned* indir_block,
 	unsigned block_ref_count = block_size / sizeof(unsigned);
 	int inode_nr = 0;
 	for (unsigned i = 0; i < block_ref_count; i++) {
-		if (indir_block[i] == 0)
+		if (indir_block[i] == 0) {
+			free(buf);
 			return 0;
+		}
 		if (load_block(imgfd, indir_block[i], buf, block_size) < 0) {
 			free(buf);
 			return -errno;
@@ -257,8 +261,10 @@ int find_record_in_dindir_block(int imgfd, int type, const unsigned* dindir_bloc
 	unsigned block_ref_count = block_size / sizeof(unsigned);
 	int inode_nr = 0;
 	for (unsigned i = 0; i < block_ref_count; i++) {
-		if (dindir_block[i] == 0)
+		if (dindir_block[i] == 0) {
+			free(buf);
 			return 0;
+		}
 		if (load_block(imgfd, dindir_block[i], (char*)buf, block_size) < 0) {
 			free(buf);
 			return -errno;
