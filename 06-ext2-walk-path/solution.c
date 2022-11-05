@@ -8,13 +8,13 @@ int dump_file(int img, const char *path, int out)
 	(void) out;
 	struct ext2_super_block sb = {};
 	struct ext2_inode inode = {};
+	if (pread_exact(img, &sb, sizeof(sb), SUPERBLOCK_OFFSET) < 0)
+		return -errno;
 	// Make a copy of the path
 	// It will be modified in a strtok() fashion
 	char* path_copy = strdup(path);
-
-	if (pread_exact(img, &sb, sizeof(sb), SUPERBLOCK_OFFSET) < 0)
-		return -errno;
 	int inode_nr = find_inode_by_path(img, 2, path_copy + 1, &sb);
+	free(path_copy);
 	if (inode_nr < 0)
 		return inode_nr;
 	ssize_t ret = 0;
