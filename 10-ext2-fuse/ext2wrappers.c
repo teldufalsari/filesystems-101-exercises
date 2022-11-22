@@ -513,7 +513,7 @@ int read_by_inode(
 		goto read_double_indirect;
 	}
 
- read_direct:
+ read_direct: ;
 	// Copy all data in direct blocks
 	// Deal with the first, uneven block
 	unsigned transfer_size = (
@@ -553,7 +553,7 @@ int read_by_inode(
 
 	if (offset != 0)
 		offset = 0;
- read_indirect:
+ read_indirect: ;
 	// If anything left, copy data from blocks pointed by the indirect
 	// block
 	if (size_left > 0) {
@@ -583,7 +583,7 @@ int read_by_inode(
 
 	if (offset != 0)
 		offset = 0;
- read_double_indirect:
+ read_double_indirect: ;
 	// If anything left, copy data from blocks pointed by the double
 	// indirect block
 	if (size_left > 0) {
