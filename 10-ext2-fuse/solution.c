@@ -42,7 +42,7 @@ int ext2_getattr(const char* path, struct stat* stat, struct fuse_file_info* inf
 	stat->st_mtim.tv_nsec = 0;
 	stat->st_ctim.tv_sec = inode.i_ctime;
 	stat->st_ctim.tv_nsec = 0;
-	stat->st_blksize = g_block_size;
+	stat->st_ino = inode_nr;
 	stat->st_blocks = inode.i_blocks;
 	return 0;
 }
