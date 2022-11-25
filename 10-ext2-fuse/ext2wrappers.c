@@ -576,7 +576,7 @@ int read_by_inode(
 		if (inode_ptr->i_block[i] == 0) {	// a hole
 			memset(read_buf, 0, transfer_size);
 		} else {
-			ret = pread_exact(imgfd, read_buf, transfer_size, inode_ptr->i_block[i]);
+			ret = pread_exact(imgfd, read_buf, transfer_size, inode_ptr->i_block[i] * block_size);
 		}
 		if (ret < 0) {
 			free(buf);
