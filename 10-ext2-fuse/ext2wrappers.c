@@ -67,6 +67,38 @@ ssize_t load_inode(
 	return pread_exact(imgfd, buf, sizeof(*buf), inode_offset);
 }
 
+mode_t ext2mode_to_nix(int ext2_mode)
+{
+	mode_t nix_mode;
+	switch (ext2_mode) {
+	case EXT2_FT_REG_FILE:
+		nix_mode = S_IFREG;
+		break;
+	case EXT2_FT_DIR:
+		nix_mode = S_IFDIR;
+		break;
+	case EXT2_FT_CHRDEV:
+		nix_mode = S_IFCHR;
+		break;
+	case EXT2_FT_BLKDEV:
+		nix_mode = S_IFBLK;
+		break;
+	case EXT2_FT_FIFO:
+		nix_mode = S_IFIFO;
+		break;
+	case EXT2_FT_SOCK:
+		nix_mode = S_IFSOCK;
+		break;
+	case EXT2_FT_SYMLINK:
+		nix_mode = S_IFLNK;
+		break;
+	default:
+		nix_mode = 0;
+		break;
+	}
+	return nix_mode;
+}
+
 //~~~~~~~~~~~~~~~~~~~~~~~ PATH TRAVERSE ~~~~~~~~~~~~~~~~~~~~~~~//
 
 int get_inode_nr(int img, const char* path, const struct ext2_super_block* sb)
@@ -254,6 +286,7 @@ void parse_directory_block(
 {
 	size_t offset = 0;
 	char name[256] = {};
+	struct stat stat = {};
 	while (offset + sizeof(struct ext2_dir_entry) - EXT2_NAME_LEN < block_size) {
 		const struct ext2_dir_entry *entry = (const struct ext2_dir_entry *)(buf + offset);
 		if (entry->rec_len == 0) { // no more records in this block
@@ -268,7 +301,9 @@ void parse_directory_block(
 		memcpy(name, entry->name, name_len);
 		name[name_len] = '\0';
 		// report
-		fill_callback(fuse_buf, name, NULL, 0, 0);
+		stat.st_ino = entry->inode;
+		stat.st_mode = ext2mode_to_nix(ext2fs_dirent_file_type(entry));
+		fill_callback(fuse_buf, name, &stat, 0, 0);
 		// load next
 		offset += entry->rec_len;
 	}
