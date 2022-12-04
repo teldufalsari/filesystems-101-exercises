@@ -112,17 +112,21 @@ func (s *Server) ParallelHash(ctx context.Context, req *parhashpb.ParHashReq) (r
 		hashes = make([][]byte, len(req.Data))
 	)
 	for i := range req.Data {
+		query_nr := i
 		wg.Go(ctx, func(ctx context.Context) error {
 			s.lock.Lock()
-			nr := s.current
+			backend_nr := s.current
 			s.current += 1
+			if s.current >= len(s.conf.BackendAddrs) {
+				s.current = 0
+			}
 			s.lock.Unlock()
-			resp, err := clients[nr].Hash(ctx, &hashpb.HashReq{Data: req.Data[i]})
+			resp, err := clients[backend_nr].Hash(ctx, &hashpb.HashReq{Data: req.Data[query_nr]})
 			if err != nil {
 				return err
 			}
 			s.lock.Lock()
-			hashes[i] = resp.Hash
+			hashes[query_nr] = resp.Hash
 			s.lock.Unlock()
 			return nil
 		})
