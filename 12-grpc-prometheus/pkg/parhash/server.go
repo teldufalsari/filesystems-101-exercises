@@ -97,7 +97,7 @@ func (s *Server) Start(ctx context.Context) (err error) {
 
 	s.nr_nr_requests = prometheus.NewCounter(prometheus.CounterOpts{
 		Namespace: "parhash",
-		Name:      "nr_nr_requests",
+		Name:      "nr_requests",
 	})
 	s.subquery_durations = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Namespace: "parhash",
